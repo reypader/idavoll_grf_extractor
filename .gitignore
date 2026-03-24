@@ -1,0 +1,8 @@
+/target/
+
+# Generated outputs from grf-extract runs — not source-controlled
+miss_log.toml
+headgear_slots.toml
+
+# Extracted GRF data — far too large to commit
+/extracted/

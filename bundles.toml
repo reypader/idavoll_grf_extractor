@@ -1,0 +1,25 @@
+# Extraction bundle definitions for grf-extract.
+#
+# Usage:
+#   grf-extract data.grf --extract sprite
+#   grf-extract data.grf --extract sprite,map
+#
+# Each bundle matches GRF entries by path prefix OR extension (union of all rules).
+# Omit --extract to extract everything (default behaviour).
+#
+# The --bundles flag controls which file to load (default: bundles.toml).
+
+[[bundle]]
+name = "sprite"
+# Sprite sheets (.spr) and animation data (.act) live under data/sprite/.
+# IMF anchor files live under data/imf/ (flat directory, one level up from sprite/).
+# The single co-located .imf under data/sprite/ is a GRF duplicate artifact; the
+# canonical copies are all in data/imf/.
+path_prefixes = ["data/sprite/", "data/imf/"]
+
+[[bundle]]
+name = "map"
+# Map geometry and world-space metadata files (matched by extension).
+extensions = ["gat", "gnd", "rsw"]
+# Textures referenced by maps.
+path_prefixes = ["data/texture/"]

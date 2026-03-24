@@ -1,0 +1,311 @@
+# GRF Korean → English translation dictionary.
+#
+# These entries are matched against individual path segments and underscore-
+# delimited tokens within filenames.  Pure-ASCII segments are kept as-is
+# without a lookup.
+#
+# To enrich this file, run grf-extract and check miss_log.toml for untranslated
+# segments, then fill in the English values here.
+
+[known]
+
+# ---------------------------------------------------------------------------
+# Top-level sprite / texture categories
+# ---------------------------------------------------------------------------
+"몬스터" = "monster"
+"인간족" = "human"
+"도람족" = "doram"
+"아이템" = "item"
+"악세사리" = "accessory"
+"양세사리" = "accessory"       # CP949 variant of 악세사리
+"방어구" = "armor"
+"무기" = "weapon"
+"이펙트" = "effect"
+"이팩트" = "effect"            # Alternate spelling
+"로브" = "robe"
+"방패" = "shield"
+"유저인터페이스" = "user_interface"
+
+# ---------------------------------------------------------------------------
+# Human sprite sub-directories
+# ---------------------------------------------------------------------------
+"몸통" = "body"
+"머리통" = "head"
+
+# ---------------------------------------------------------------------------
+# Gender sub-directories and filename suffixes
+# ---------------------------------------------------------------------------
+"남" = "male"
+"여" = "female"
+
+# ---------------------------------------------------------------------------
+# Common descriptors
+# ---------------------------------------------------------------------------
+"용병" = "mercenary"
+"검정" = "black"
+"흰색" = "white"
+"파랑" = "blue"
+"빨강" = "red"
+"가드" = "guard"
+"검광" = "slash_glow"          # Weapon slash-effect sprite suffix (_검광)
+
+# ---------------------------------------------------------------------------
+# Mercenary job name tokens (prefix in weapon filenames inside mercenary/)
+# ---------------------------------------------------------------------------
+"검용병" = "sword_mercenary"
+"창용병" = "spear_mercenary"
+"활용병" = "bow_mercenary"
+
+# ---------------------------------------------------------------------------
+# Weapon type tokens (used in weapon filenames)
+# ---------------------------------------------------------------------------
+"검" = "sword"
+"창" = "spear"
+"활" = "bow"
+"단검" = "dagger"
+"양손검" = "two_handed_sword"
+"양손창" = "two_handed_spear"
+"도끼" = "axe"
+"양손도끼" = "two_handed_axe"
+"너클" = "knuckle"
+"채찍" = "whip"
+"책" = "book"
+"캔디케인롯드" = "candy_cane_rod"
+"권총" = "pistol"
+"권총광" = "pistol_glow"          # Rebellion pistol effect overlay
+"기관총" = "machine_gun"
+"기관총광" = "machine_gun_glow"   # Rebellion machine gun effect overlay
+"샷건" = "shotgun"
+"발광" = "glow"                   # Taekwon Boy radiance weapon state
+"스킬" = "skill"                  # Mage skill-cast animation overlay
+"메탈" = "metal"                  # Summoner foxtail weapon variant
+"악기" = "instrument"             # Bard instrument weapon type
+
+# ---------------------------------------------------------------------------
+# Base job classes
+# ---------------------------------------------------------------------------
+"초보자" = "novice"
+"검사" = "swordsman"
+"마법사" = "mage"
+"기사" = "knight"
+"성직자" = "priest"
+"도둑" = "thief"
+"상인" = "merchant"
+"궁수" = "archer"
+"연금술사" = "alchemist"
+"무희" = "dancer"
+"바지" = "pants"
+"바드" = "bard"
+"몽크" = "monk"
+"어세신" = "assassin"
+"크루세이더" = "crusader"
+"팔라딘" = "paladin"
+"슈퍼노비스" = "super_novice"
+"위저드" = "wizard"
+"세이지" = "sage"
+"닌자" = "ninja"
+"제철공" = "blacksmith"
+
+# ---------------------------------------------------------------------------
+# Third-job / advanced classes
+# ---------------------------------------------------------------------------
+"룬나이트" = "rune_knight"
+"워록" = "warlock"
+"아크비숍" = "arch_bishop"
+"레인저" = "ranger"
+"크리에이터" = "creator"
+"길로틴크로스" = "guillotine_cross"
+"스나이퍼" = "sniper"
+"쉐도우체이서" = "shadow_chaser"
+"민스트럴" = "minstrel"
+"오보로" = "oboro"
+"카게로" = "kagerou"
+"스타글래디에이터" = "star_gladiator"
+"소울링커" = "soul_linker"
+"태권소년" = "taekwon_boy"
+"레인져늑대" = "ranger_wolf"          # Ranger on wolf mount
+"레인저늑대" = "ranger_wolf"          # Alternate spelling (레인저 vs 레인져)
+"구페코크루세이더" = "pecopeco_crusader"  # Crusader on Peco Peco
+"신페코크루세이더" = "pecopeco_paladin"  # Paladin on Peco Peco
+"구페코" = "pecopeco_crusader"           # Short form (구 = old/original); used in imf/ filenames
+"신페코" = "pecopeco_paladin"            # Short form (신 = new); used in imf/ filenames
+"페코페코" = "pecopeco"               # Peco Peco mount (token-level, ensures filenames inside pecopeco_* dirs translate correctly)
+"페코페코_기사" = "pecopeco_knight"    # Knight on Peco Peco
+"페코페코기사" = "pecopeco_knight"     # alternate spelling (no underscore) used in some weapon filenames
+
+# ---------------------------------------------------------------------------
+# Other job / sprite directories
+# ---------------------------------------------------------------------------
+"로그" = "rogue"
+"프리스트" = "priest"
+"헌터" = "hunter"
+"건너" = "gunslinger"              # 건슬링어 shortened; uses firearm weapons
+"룬드래곤" = "rune_dragon"          # Rune Knight on dragon mount
+"마도기어" = "madogear"             # Mechanic on Madogear
+"마도아머" = "madogear"             # alternate spelling used in some weapon filenames in the madogear dir
+"운영자" = "gm"                    # Game Master sprites
+"운영자2" = "gm"                   # alternate GM appearance; uses same weapon sprites as base gm
+
+# ---------------------------------------------------------------------------
+# Second-job / alternate job name spellings
+# ---------------------------------------------------------------------------
+"레인져" = "ranger"                # Alternate spelling of 레인저
+"어쌔신크로스" = "assassin_cross"   # 2nd-class assassin (also spelled 어쎄신크로스 below)
+"어쎄신크로스" = "assassin_cross"   # alternate CP949 variant
+"어세신크로스" = "assassin_cross"   # third CP949 variant (어세신)
+"로드나이트" = "lord_knight"        # 2nd-class knight
+"프로페서" = "professor"           # 2nd-class sage
+"화이트스미스" = "whitesmith"       # 2nd-class blacksmith
+"권성" = "champion"               # 2nd-class monk (권성 = fist saint)
+"원더러" = "wanderer"              # 3rd-class dancer (female)
+"소서러" = "sorcerer"              # 3rd-class sage
+"미케닉" = "mechanic"              # 3rd-class blacksmith
+"슈라" = "sura"                    # 3rd-class monk
+"수라" = "sura"                    # Alternate spelling of 슈라; used in shield/ directory
+"로얄가드" = "royal_guard"         # 3rd-class crusader/paladin
+
+# ---------------------------------------------------------------------------
+# Special / event / costume body job names (compound tokens, no internal _)
+# ---------------------------------------------------------------------------
+"결혼" = "wedding"                 # Wedding outfit body (male + female variants)
+"웨딩" = "bridal"                  # Female-only alternate wedding body (웨딩 loanword)
+"한복" = "hanbok"                  # Traditional Korean dress outfit
+"여름" = "summer"                  # Summer event outfit
+"여름2" = "summer_2"
+"성제" = "holy_emperor"            # Special event body
+"성제융합" = "holy_emperor_fusion"  # Fusion variant
+"성투사" = "holy_warrior"          # Holy warrior event body (base variant)
+"성투사2" = "holy_warrior_2"       # Holy warrior event body variant 2
+"산타" = "santa"                   # Santa Claus event body
+"옥토버패스트" = "oktoberfest"      # Oktoberfest event body
+"제네릭" = "generic"               # Generic placeholder body
+"무희바지" = "dancer_pants"        # Dancer pants variant (alternate body triggered by pants equipment)
+
+# Mount / animal companion costumes
+"타조바드" = "ostrich_bard"
+"타조스나이퍼" = "ostrich_sniper"
+"타조레인져" = "ostrich_ranger"
+"타조민스트럴" = "ostrich_minstrel"
+"타조원더러" = "ostrich_wanderer"
+"타조크라운" = "ostrich_crown"
+"타조헌터" = "ostrich_hunter"
+"타조무희" = "ostrich_dancer"
+"타조궁수" = "ostrich_archer"
+"상인멧돼지" = "merchant_boar"
+"두꺼비소울링커" = "toad_soul_linker"
+"두꺼비닌자" = "toad_ninja"
+"두꺼비오보로" = "toad_oboro"
+"두꺼비카게로" = "toad_kagerou"
+"크리에이터멧돼지" = "creator_boar"
+"화이트스미스멧돼지" = "whitesmith_boar"
+"미케닉멧돼지" = "mechanic_boar"
+"연금술사멧돼지" = "alchemist_boar"
+"하이프리스트알파카" = "high_priest_alpaca"
+"챔피온알파카" = "champion_alpaca"
+"프리스트알파카" = "priest_alpaca"
+"몽크알파카" = "monk_alpaca"
+"복사알파카" = "replica_alpaca"    # 복사 = copy/replica
+"켈베로스어쎄신크로스" = "cerberus_assassin_cross"
+"켈베로스어쌔신크로스" = "cerberus_assassin_cross"  # alternate spelling
+"켈베로스어세신크로스" = "cerberus_assassin_cross"  # third spelling variant
+"켈베로스어쎄신" = "cerberus_assassin"  # short form (without 크로스)
+"켈베로스로그" = "cerberus_rogue"
+"켈베로스스토커" = "cerberus_stalker"
+"켈베로스도둑" = "cerberus_thief"
+"해태소울리퍼" = "haetae_soul_reaper"
+"해태성제" = "haetae_holy_emperor"
+"여우소서러" = "fox_sorcerer"
+"여우하이위저드" = "fox_high_wizard"
+"여우위저드" = "fox_wizard"
+"여우마법사" = "fox_mage"
+"여우세이지" = "fox_sage"
+"여우프로페서" = "fox_professor"
+"슈퍼노비스포링" = "super_novice_poring"
+"태권소년포링" = "taekwon_boy_poring"  # in garment filenames
+"노비스포링" = "novice_poring"
+"태권소녀포링" = "taekwon_girl_poring"
+"권성포링" = "champion_poring"
+"권성융합" = "champion_fusion"
+
+# Lion-series costumes
+"사자팔라딘" = "lion_paladin"
+"사자크루세이더" = "lion_crusader"
+"사자룬나이트" = "lion_rune_knight"
+"사자로얄가드" = "lion_royal_guard"
+"사자기사" = "lion_knight"
+"사자로드나이트" = "lion_lord_knight"
+
+# Peco mount variants
+"페코검사" = "peco_swordsman"
+"페코건너" = "peco_gunner"
+"쿠페코크루세이더" = "peco_crusader_alt"  # distinct from 구페코크루세이더; likely a GRF typo/variant
+"로드페코" = "lord_peco"                 # Lord Knight on Peco Peco (garment variant)
+
+# ---------------------------------------------------------------------------
+# Costume body job names (whole compound tokens used in costume_N subdirs)
+# ---------------------------------------------------------------------------
+"룬나이트쁘띠" = "rune_knight_petit"
+"룬나이트쁘띠2" = "rune_knight_petit_2"
+"룬나이트쁘띠3" = "rune_knight_petit_3"
+"룬나이트쁘띠4" = "rune_knight_petit_4"
+"룬나이트쁘띠5" = "rune_knight_petit_5"
+"슈라알파카" = "sura_alpaca"
+"아크비숍알파카" = "archbishop_alpaca"
+"켈베로스쉐도우체이서" = "cerberus_shadow_chaser"
+"켈베로스길로틴크로스" = "cerberus_guillotine_cross"
+"여우워록" = "fox_warlock"
+"그리폰가드" = "gryphon_guard"
+"제네릭멧돼지" = "generic_boar"
+
+# ---------------------------------------------------------------------------
+# Additional job names (appear in garment filenames)
+# ---------------------------------------------------------------------------
+"챔피온" = "champion"              # Alternate loanword spelling (챔피온 vs 권성)
+"집시" = "gypsy"                   # 2nd-class female dancer
+"댄서" = "dancer"                  # Loanword variant of 무희 (dancer)
+"클라운" = "clown"                 # 2nd-class bard (clown)
+"스토커" = "stalker"               # 2nd-class rogue (stalker)
+"리벨리온" = "rebellion"           # Rebellion (Korean loanword spelling variant)
+"하이프리스트" = "high_priest"     # 2nd-class priest
+"하이프리" = "high_priest"         # Shortened form used in some garment filenames
+"하이위저드" = "high_wizard"       # 2nd-class wizard
+"소울리퍼" = "soul_reaper"        # 3rd-class soul reaper (Doram)
+"윈더러" = "wanderer"              # Alternate loanword spelling (윈더러 vs 원더러)
+"알케미스트" = "alchemist"         # Loanword variant of 연금술사
+"프로세서" = "professor"           # Alt loanword spelling of professor (프로페서); appears as 2nd-class sage in garments
+"루나이트" = "rune_knight"         # Shortened form (루나이트 vs 룬나이트)
+"마법상" = "magic_merchant"        # Female-only garment job; likely event/NPC costume variant
+"슈라노비스" = "super_novice"       # Alt phonetic spelling of 슈퍼노비스 (super novice); confirmed job class
+
+# Compound garment job name variants
+"타조짚시" = "ostrich_gypsy"
+"페코팔라딘" = "peco_paladin"      # Paladin on Peco (garment); distinct from 신페코크루세이더 body sprite
+"페코크루세이더" = "peco_crusader"  # Short form without 구/신 prefix (garment job variant)
+"제철공멧돼지" = "blacksmith_boar" # Blacksmith on boar mount
+"켈베로스어세신" = "cerberus_assassin"  # Short form, alternate spelling (어세신 vs 어쎄신)
+"사자로얄거드" = "lion_royal_guard" # Typo variant of 사자로얄가드 (거드 vs 가드)
+
+# ---------------------------------------------------------------------------
+# Garment (robe) directory names (garment item names)
+# ---------------------------------------------------------------------------
+"천사날개" = "angel_wings"
+"검의날개" = "sword_wings"
+"소악마날개" = "minor_devil_wings"
+"대악마날개" = "major_devil_wings"
+"기린의날개" = "giraffe_wings"
+"행복의날개" = "happiness_wings"
+"우리엘의날개" = "uriel_wings"
+"루드라의날개" = "rudra_wings"
+"타나토스의검" = "thanatos_sword"
+"분홍큐피트날개" = "pink_cupid_wings"
+"요정의파란날개" = "fairy_blue_wings"
+"피아멧트의리본" = "fiamet_ribbon"
+"포링가방" = "poring_bag"
+"안토니오가방" = "antonio_bag"
+"아미스트르가방" = "amistris_bag"
+"아버지사랑날개2012" = "fathers_love_wings_2012"
+
+# ---------------------------------------------------------------------------
+# Garment (robe) job name variants
+# ---------------------------------------------------------------------------
+"페코rebellion" = "peco_rebellion"  # Rebellion on peco mount (garment job name)
