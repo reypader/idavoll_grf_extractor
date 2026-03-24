@@ -161,4 +161,4 @@ extracted/
         └── ...
 ```
 
-Point `idavoll-sprite-exporter scan` at `extracted/data/sprite/` as the `grf_root`.
+Point `idavoll-sprite-exporter scan` at `extracted/data/` as the `data_root`.
