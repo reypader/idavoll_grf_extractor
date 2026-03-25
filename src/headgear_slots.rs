@@ -22,62 +22,14 @@ pub struct HeadgearSlotEntry {
 }
 
 // ---------------------------------------------------------------------------
-// accname_eng.lub parser
-// ---------------------------------------------------------------------------
-
-/// Extract the ordered accname list from the compiled Lua bytecode.
-///
-/// The bytecode contains null-terminated ASCII strings in order; we scan for
-/// those matching `_[A-Z][A-Z0-9_]+` (the accname pattern), strip the leading
-/// `_`, and lowercase.  The resulting Vec is 0-indexed; view_id 1 → index 0.
-pub fn parse_accname_lub(data: &[u8]) -> Vec<String> {
-    let mut results: Vec<String> = Vec::new();
-    let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
-    let mut buf: Vec<u8> = Vec::new();
-
-    for &b in data {
-        if b == 0 {
-            if !buf.is_empty() {
-                if let Ok(s) = std::str::from_utf8(&buf)
-                    && is_accname(s) && !seen.contains(s) {
-                        seen.insert(s.to_string());
-                        results.push(s[1..].to_lowercase());
-                    }
-                buf.clear();
-            }
-        } else if (0x20..0x7f).contains(&b) {
-            buf.push(b);
-        } else {
-            buf.clear();
-        }
-    }
-
-    results
-}
-
-/// Returns true if the string matches `_[A-Z][A-Z0-9_]+`.
-fn is_accname(s: &str) -> bool {
-    let mut chars = s.chars();
-    match chars.next() {
-        Some('_') => {}
-        _ => return false,
-    }
-    match chars.next() {
-        Some(c) if c.is_ascii_uppercase() => {}
-        _ => return false,
-    }
-    chars.all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
-}
-
-// ---------------------------------------------------------------------------
 // rAthena headgear parser
 // ---------------------------------------------------------------------------
 
-/// Per-item headgear metadata extracted from rAthena item_db_equip.yml.
 struct HeadgearItem {
     id: u32,
     view: u32,
     slot: HeadSlot,
+    aegis_name: String,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -102,9 +54,12 @@ impl HeadSlot {
     }
 }
 
-/// Parse rAthena `item_db_equip.yml` for headgear items.
-/// Returns a map of view_id → list of (item_id, slot).
-pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot)>> {
+/// Parse rAthena `item_db_equip.yml` for headgear items (View > 0, head location).
+///
+/// Returns a map of view_id → list of (item_id, slot, aegis_name).
+/// The accname for each view group is later derived from the AegisName of
+/// the lowest-ID item in that group.
+pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot, String)>> {
     let Ok(text) = std::fs::read_to_string(path) else {
         return HashMap::new();
     };
@@ -113,6 +68,7 @@ pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot)>> {
     let mut current_id: Option<u32> = None;
     let mut current_view: Option<u32> = None;
     let mut current_slot: Option<HeadSlot> = None;
+    let mut current_aegis: Option<String> = None;
     let mut in_location = false;
 
     for line in text.lines() {
@@ -120,13 +76,23 @@ pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot)>> {
 
         if let Some(rest) = s.strip_prefix("- Id:") {
             // Flush previous item.
-            if let (Some(id), Some(view), Some(slot)) = (current_id, current_view, current_slot) {
-                items.push(HeadgearItem { id, view, slot });
+            let aegis = current_aegis.take();
+            if let (Some(id), Some(view), Some(slot), Some(aegis)) =
+                (current_id, current_view, current_slot, aegis)
+            {
+                items.push(HeadgearItem { id, view, slot, aegis_name: aegis });
             }
             current_id = rest.split('#').next().unwrap_or("").trim().parse().ok();
             current_view = None;
             current_slot = None;
             in_location = false;
+        } else if let Some(rest) = s.strip_prefix("AegisName:") {
+            if current_aegis.is_none() {
+                let aegis = rest.trim().trim_matches('"').to_string();
+                if !aegis.is_empty() {
+                    current_aegis = Some(aegis);
+                }
+            }
         } else if s == "Locations:" {
             in_location = true;
         } else if in_location {
@@ -146,7 +112,7 @@ pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot)>> {
                     None => HeadSlot::Low,
                 });
             } else if !s.is_empty() && !s.starts_with('#') {
-                // Left the Location block.
+                // Left the Locations block.
                 in_location = false;
             }
         }
@@ -157,15 +123,18 @@ pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot)>> {
     }
 
     // Flush last item.
-    if let (Some(id), Some(view), Some(slot)) = (current_id, current_view, current_slot) {
-        items.push(HeadgearItem { id, view, slot });
+    let aegis = current_aegis.take();
+    if let (Some(id), Some(view), Some(slot), Some(aegis)) =
+        (current_id, current_view, current_slot, aegis)
+    {
+        items.push(HeadgearItem { id, view, slot, aegis_name: aegis });
     }
 
     // Group by view_id, filtering out view 0 (no sprite).
-    let mut map: HashMap<u32, Vec<(u32, HeadSlot)>> = HashMap::new();
+    let mut map: HashMap<u32, Vec<(u32, HeadSlot, String)>> = HashMap::new();
     for item in items {
         if item.view > 0 {
-            map.entry(item.view).or_default().push((item.id, item.slot));
+            map.entry(item.view).or_default().push((item.id, item.slot, item.aegis_name));
         }
     }
     map
@@ -175,46 +144,45 @@ pub fn parse_headgear_items(path: &Path) -> HashMap<u32, Vec<(u32, HeadSlot)>> {
 // Builder
 // ---------------------------------------------------------------------------
 
-/// Build the headgear slots list by joining the accname table with the
-/// rAthena headgear item map.
+/// Build the headgear slots list from the rAthena headgear item map.
 ///
-/// Only view IDs that appear in `headgear_map` are emitted.  View IDs present
-/// in `accnames` but absent from `headgear_map` are skipped (no item DB
-/// entry, likely unused or unknown content).
+/// The accname for each view group is the AegisName (lowercased) of the item
+/// with the lowest ID in that group — this is the original/canonical item for
+/// that view, whose AegisName matches the sprite identifier.
 pub fn build_headgear_slots(
-    accnames: &[String],
-    headgear_map: &HashMap<u32, Vec<(u32, HeadSlot)>>,
+    headgear_map: &HashMap<u32, Vec<(u32, HeadSlot, String)>>,
 ) -> Vec<HeadgearSlotEntry> {
     // Use a BTreeMap so output is sorted by view_id.
     let mut by_view: BTreeMap<u32, HeadgearSlotEntry> = BTreeMap::new();
 
-    for (zero_idx, accname) in accnames.iter().enumerate() {
-        let view_id = (zero_idx + 1) as u32;
-        let Some(item_list) = headgear_map.get(&view_id) else {
-            continue;
-        };
-
+    for (&view_id, item_list) in headgear_map {
         // Determine the canonical slot: if all items agree, use that slot;
         // otherwise fall back to Head_Top.
         let slot = item_list
             .iter()
-            .map(|(_, s)| *s)
+            .map(|(_, s, _)| *s)
             .reduce(|a, b| a.merge(b))
             .unwrap_or(HeadSlot::Top)
             .as_str()
             .to_string();
 
-        let mut item_ids: Vec<u32> = item_list.iter().map(|(id, _)| *id).collect();
+        // Derive accname from the AegisName of the lowest-ID (primary) item.
+        let accname = item_list
+            .iter()
+            .min_by_key(|(id, _, _)| id)
+            .map(|(_, _, aegis)| aegis.to_lowercase())
+            .unwrap_or_default();
+
+        if accname.is_empty() {
+            continue;
+        }
+
+        let mut item_ids: Vec<u32> = item_list.iter().map(|(id, _, _)| *id).collect();
         item_ids.sort_unstable();
 
         by_view.insert(
             view_id,
-            HeadgearSlotEntry {
-                view: view_id,
-                slot,
-                accname: accname.clone(),
-                items: item_ids,
-            },
+            HeadgearSlotEntry { view: view_id, slot, accname, items: item_ids },
         );
     }
 

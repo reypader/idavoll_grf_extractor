@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo build:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(grep -r W_2HSTAFFs*= /Users/rmpader/Downloads/ragnarok_online_resource_references/rathena/)",
+      "Bash(cargo run:*)"
+    ]
+  }
+}

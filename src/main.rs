@@ -4,6 +4,7 @@ mod grf;
 mod headgear_slots;
 mod rathena;
 mod translate;
+mod weapon_types;
 
 use anyhow::{Context, Result};
 use clap::Parser;
@@ -15,7 +16,6 @@ use grf::Grf;
 use translate::{format_miss_log, Translator, TranslationsFile};
 
 const ITEM_RES_TABLE_PATH: &str = "data\\idnum2itemresnametable.txt";
-const ACCNAME_LUB_PATH: &str = "data\\luafiles514\\lua files\\datainfo\\accname_eng.lub";
 
 #[derive(Parser)]
 #[command(name = "grf-extract")]
@@ -39,6 +39,10 @@ struct Args {
     /// Where to write the generated headgear slots file (requires --rathena-db)
     #[arg(long, default_value = "headgear_slots.toml")]
     headgear_slots: PathBuf,
+
+    /// Where to write the generated weapon types file (requires --rathena-db)
+    #[arg(long, default_value = "weapon_types.toml")]
+    weapon_types: PathBuf,
 
     /// Where to write the miss log (untranslated Korean segments)
     #[arg(long, default_value = "miss_log.toml")]
@@ -81,9 +85,10 @@ fn main() -> Result<()> {
         println!("rAthena: {} item res name mappings loaded", rathena_lookup.len());
     }
 
-    // Generate headgear_slots.toml when rAthena DB is available.
+    // Generate headgear_slots.toml and weapon_types.toml when rAthena DB is available.
     if let Some(ref db_path) = args.rathena_db {
-        generate_headgear_slots(&mut grf, db_path, &args.headgear_slots)?;
+        generate_headgear_slots(db_path, &args.headgear_slots)?;
+        generate_weapon_types(db_path, &args.weapon_types)?;
     }
 
     // Translate all paths up front.
@@ -222,48 +227,30 @@ fn load_known(path: &Path) -> Result<HashMap<String, String>> {
     Ok(file.known)
 }
 
-/// Extract `accname_eng.lub` and rAthena item data to generate headgear_slots.toml.
-fn generate_headgear_slots(
-    grf: &mut Grf<fs::File>,
-    rathena_db: &Path,
-    out_path: &Path,
-) -> Result<()> {
-    let lub_entry = grf
-        .entries
-        .iter()
-        .find(|e| e.internal_path.eq_ignore_ascii_case(ACCNAME_LUB_PATH))
-        .map(|e| grf::GrfEntry {
-            internal_path: e.internal_path.clone(),
-            pack_size: e.pack_size,
-            length_aligned: e.length_aligned,
-            real_size: e.real_size,
-            entry_type: e.entry_type,
-            data_offset: e.data_offset,
-        });
-
-    let Some(lub_entry) = lub_entry else {
-        eprintln!("WARN: accname_eng.lub not found in GRF; skipping headgear slots generation");
-        return Ok(());
-    };
-
-    let lub_data = grf
-        .read_entry(&lub_entry)
-        .context("reading accname_eng.lub from GRF")?;
-
-    let accnames = headgear_slots::parse_accname_lub(&lub_data);
-    println!("accname_eng.lub: {} accnames parsed", accnames.len());
-
+/// Parse rAthena item DB to generate headgear_slots.toml.
+///
+/// Accnames are derived from the AegisName of the lowest-ID item per view group,
+/// eliminating the need to scan accname_eng.lub from the GRF.
+fn generate_headgear_slots(rathena_db: &Path, out_path: &Path) -> Result<()> {
     let equip_db = rathena_db.join("re/item_db_equip.yml");
     let headgear_map = headgear_slots::parse_headgear_items(&equip_db);
-
-    let entries = headgear_slots::build_headgear_slots(&accnames, &headgear_map);
+    let entries = headgear_slots::build_headgear_slots(&headgear_map);
     let count = entries.len();
-
     headgear_slots::write_headgear_slots(entries, out_path)
         .with_context(|| format!("writing {}", out_path.display()))?;
-
     println!("Headgear slots: {} entries → {}", count, out_path.display());
+    Ok(())
+}
 
+/// Parse rAthena item DB to generate weapon_types.toml.
+fn generate_weapon_types(rathena_db: &Path, out_path: &Path) -> Result<()> {
+    let equip_db = rathena_db.join("re/item_db_equip.yml");
+    let weapon_map = weapon_types::parse_weapon_items(&equip_db);
+    let entries = weapon_types::build_weapon_types(weapon_map);
+    let count = entries.len();
+    weapon_types::write_weapon_types(entries, out_path)
+        .with_context(|| format!("writing {}", out_path.display()))?;
+    println!("Weapon types: {} entries → {}", count, out_path.display());
     Ok(())
 }
 

@@ -107,13 +107,55 @@ Edit `bundles.toml` — no code changes needed. Bundle definitions are loaded at
 ## rAthena Integration
 
 ### Headgear slots (`headgear_slots.toml`)
-Generated when `--rathena-db` is provided. Combines:
-- `accname_eng.lub` extracted from the GRF (Lua bytecode scanned for null-terminated ASCII
-  strings matching `_[A-Z][A-Z0-9_]+` pattern — these are the accname identifiers)
-- `re/item_db_equip.yml` from rAthena (provides view ID and slot per headgear item)
+Generated when `--rathena-db` is provided. Source: `re/item_db_equip.yml` only — no GRF
+Lua scanning required.
 
-Output maps each headgear `accname` to its view ID and slot (`Head_Top` / `Head_Mid` / `Head_Low`).
+- Items with `View > 0` and at least one head location (`Head_Top`, `Head_Mid`, `Head_Low`)
+  are grouped by view ID.
+- The `accname` for each view group is the AegisName (lowercased) of the lowest-ID item in
+  that group (the original/canonical item whose AegisName matches the sprite identifier).
+- Canonical slot: if all items in the group share the same location, that location is used;
+  conflicting locations default to `Head_Top`.
+
+Output maps each headgear view ID to its `accname`, slot, and all item IDs.
 Used by `idavoll_sprite_exporter scan` to assign headgear slot indices.
+
+### Weapon types (`weapon_types.toml`)
+Generated when `--rathena-db` is provided. Source: `re/item_db_equip.yml`.
+
+- Items with `Type: Weapon` are grouped by `SubType`.
+- Each SubType maps to a numeric weapon type ID (from rAthena `src/map/pc.hpp`) and a
+  sprite directory name matching the translated GRF path segment:
+
+  | SubType | ID | sprite name |
+  |---------|----|-------------|
+  | `Dagger` | 1 | `dagger` |
+  | `1hSword` | 2 | `sword` |
+  | `2hSword` | 3 | `two_handed_sword` |
+  | `1hSpear` | 4 | `spear` |
+  | `2hSpear` | 5 | `two_handed_spear` |
+  | `1hAxe` | 6 | `axe` |
+  | `2hAxe` | 7 | `two_handed_axe` |
+  | `Mace` | 8 | `mace` |
+  | `Staff` | 10 | `staff` |
+  | `Bow` | 11 | `bow` |
+  | `Knuckle` | 12 | `knuckle` |
+  | `Musical` | 13 | `musical` |
+  | `Whip` | 14 | `whip` |
+  | `Book` | 15 | `book` |
+  | `Katar` | 16 | `katar` |
+  | `Revolver` | 17 | `revolver` |
+  | `Rifle` | 18 | `rifle` |
+  | `Gatling` | 19 | `gatling_gun` |
+  | `Shotgun` | 20 | `shotgun` |
+  | `Grenade` | 21 | `grenade_launcher` |
+  | `Huuma` | 22 | `fuuma_shuriken` |
+  | `2hStaff` | 23 | `two_handed_staff` |
+
+  ID 9 (`W_2HMACE`) has no items in the rAthena DB and is absent from the output.
+
+Output lists weapon types sorted by ID, each with the sprite `name` and all item IDs.
+Used by `idavoll_sprite_exporter` to categorize weapon overlay sprites.
 
 ### Item res name table
 `data\idnum2itemresnametable.txt` maps numeric item IDs to Korean res names. Joined with
@@ -187,8 +229,9 @@ Arguments:
 Options:
   -o, --output <DIR>           Output directory [default: extracted]
   -t, --translations <PATH>    translations.toml [default: translations.toml]
-      --rathena-db <PATH>      rAthena db/ directory (enables headgear slots + item lookup)
+      --rathena-db <PATH>      rAthena db/ directory (enables headgear slots + weapon types + item lookup)
       --headgear-slots <PATH>  Output headgear_slots.toml [default: headgear_slots.toml]
+      --weapon-types <PATH>    Output weapon_types.toml [default: weapon_types.toml]
       --miss-log <PATH>        Output miss log [default: miss_log.toml]
       --bundles <PATH>         Bundle definitions [default: bundles.toml]
       --extract <NAMES>        Comma-separated bundle names to extract (omit = extract all)
@@ -198,12 +241,13 @@ Options:
 
 ### Typical workflow
 ```sh
-# Full extraction with rAthena DB (generates headgear_slots.toml)
+# Full extraction with rAthena DB (generates headgear_slots.toml + weapon_types.toml)
 idavoll-grf-extractor data.grf \
   -o extracted/ \
   --translations translations.toml \
   --rathena-db /path/to/rathena/db \
-  --headgear-slots headgear_slots.toml
+  --headgear-slots headgear_slots.toml \
+  --weapon-types weapon_types.toml
 
 # Sprite-only re-extraction (faster iteration)
 idavoll-grf-extractor data.grf \

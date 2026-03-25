@@ -1,4 +1,4 @@
-# idavoll-idavoll-grf-extractoror
+# idavoll-grf-extractor
 
 Extracts a Ragnarok Online `.grf` archive to disk with Korean→English filename
 translation. Designed as the upstream step before running
@@ -23,8 +23,10 @@ Options:
   -o, --output <DIR>            Output directory [default: extracted]
   -t, --translations <TOML>    Path to translations.toml [default: translations.toml]
       --rathena-db <PATH>       Path to rAthena db/ directory
-      --headgear-slots <PATH>   Where to write the headgear slots file (requires --rathena-db)
+      --headgear-slots <PATH>   Where to write headgear_slots.toml (requires --rathena-db)
                                 [default: headgear_slots.toml]
+      --weapon-types <PATH>     Where to write weapon_types.toml (requires --rathena-db)
+                                [default: weapon_types.toml]
       --miss-log <PATH>         Where to write untranslated segments [default: miss_log.toml]
       --dry-run                 Translate paths without writing files (still writes miss log)
   -v, --verbose                 Print each file as it is extracted
@@ -41,22 +43,28 @@ Extracts all files to `extracted/`, translating Korean path segments to English
 using `translations.toml`. Any segments that could not be translated are written
 to `miss_log.toml` for later enrichment.
 
-### With rAthena item name resolution and headgear slots
+### With rAthena item name resolution, headgear slots, and weapon types
 
 ```sh
 idavoll-grf-extractor data.grf -o extracted/ --rathena-db /path/to/rathena/db
 ```
 
-When `--rathena-db` is provided, two additional things happen automatically:
+When `--rathena-db` is provided, three additional things happen automatically:
 
 1. **Item name translation** — reads `idnum2itemresnametable.txt` from the GRF
    and cross-references it with rAthena item databases to translate Korean item
    resource names (garment directories, item sprites, etc.) to AegisNames.
 
-2. **`headgear_slots.toml` generation** — reads `accname_eng.lub` from the GRF
-   and joins it with rAthena headgear item data to produce the slot lookup file
-   consumed by `idavoll-sprite-exporter scan`. Written to `headgear_slots.toml` by
-   default; override with `--headgear-slots`.
+2. **`headgear_slots.toml` generation** — parses `re/item_db_equip.yml` to build
+   a view ID → accname + slot + items lookup consumed by `idavoll-sprite-exporter
+   scan`. Accnames are the lowercased AegisName of the lowest-ID item for each view
+   group. Written to `headgear_slots.toml` by default; override with
+   `--headgear-slots`.
+
+3. **`weapon_types.toml` generation** — parses `re/item_db_equip.yml` for weapon
+   items and groups them by SubType, producing a weapon type ID → sprite dir name +
+   items lookup. Written to `weapon_types.toml` by default; override with
+   `--weapon-types`.
 
 The `--rathena-db` path should point to the rAthena `db/` directory, which
 contains subdirectories `re/` and `pre-re/`. The following files are read:
