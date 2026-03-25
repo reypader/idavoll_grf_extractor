@@ -27,6 +27,8 @@ Options:
                                 [default: headgear_slots.toml]
       --weapon-types <PATH>     Where to write weapon_types.toml (requires --rathena-db)
                                 [default: weapon_types.toml]
+      --bundles <TOML>          Bundle definitions file [default: bundles.toml]
+      --extract <NAMES>         Comma-separated bundles to extract (omit = extract everything)
       --miss-log <PATH>         Where to write untranslated segments [default: miss_log.toml]
       --dry-run                 Translate paths without writing files (still writes miss log)
   -v, --verbose                 Print each file as it is extracted
@@ -86,6 +88,41 @@ committing to a full extraction:
 ```sh
 idavoll-grf-extractor data.grf --dry-run --rathena-db /path/to/rathena/db
 ```
+
+### Selective extraction with bundles
+
+To extract only a subset of files, use `--extract` with one or more bundle names:
+
+```sh
+# Sprites and IMF anchor files only (fastest iteration)
+idavoll-grf-extractor data.grf -o extracted/ --extract sprite
+
+# Map geometry, textures, and sprites together
+idavoll-grf-extractor data.grf -o extracted/ --extract map,sprite
+```
+
+Bundles are defined in `bundles.toml` next to the binary. Each bundle matches
+GRF entries by path prefix, file extension, or both (union). Two bundles ship
+by default:
+
+| Bundle | Matches |
+|--------|---------|
+| `sprite` | `data/sprite/` and `data/imf/` (sprites + IMF anchor files) |
+| `map` | `data/texture/` prefix and `.gat`, `.gnd`, `.rsw` extensions |
+
+Omitting `--extract` extracts everything (the default).
+
+To add new bundles, edit `bundles.toml` — no code changes required. Example:
+
+```toml
+[[bundle]]
+name = "sound"
+path_prefixes = ["data/wav/", "data/bgm/"]
+extensions = ["wav", "mp3", "ogg"]
+```
+
+The `--bundles` flag overrides which file is loaded (useful when maintaining
+multiple bundle configurations alongside different projects).
 
 ## Translation pipeline
 
