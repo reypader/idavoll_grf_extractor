@@ -91,13 +91,62 @@ fn main() -> Result<()> {
         generate_weapon_types(db_path, &args.weapon_types)?;
     }
 
+    // Always load bundles.toml — needed for translate=false passthrough as well as
+    // the --extract bundle filter.
+    let bundles_file: bundles::BundlesFile = bundles::load(&args.bundles)?;
+
+    // Validate --extract names.
+    if !args.extract.is_empty() {
+        for name in &args.extract {
+            if !bundles_file.bundle.iter().any(|b| b.name == *name) {
+                let known: Vec<&str> = bundles_file.bundle.iter().map(|b| b.name.as_str()).collect();
+                eprintln!("WARN: unknown bundle '{name}'; known bundles: {}", known.join(", "));
+            }
+        }
+    }
+
+    // Collect path prefixes from bundles where translate = false. Paths that
+    // start with any of these are forwarded as-is (backslash → slash only),
+    // bypassing Korean→English translation.
+    let passthrough_prefixes: Vec<&str> = bundles_file
+        .bundle
+        .iter()
+        .filter(|b| !b.translate)
+        .flat_map(|b| b.path_prefixes.iter().map(|s| s.as_str()))
+        .collect();
+
+    // Active bundles for the --extract filter (None = extract everything).
+    let active_bundles: Option<Vec<&bundles::Bundle>> = if args.extract.is_empty() {
+        None
+    } else {
+        Some(
+            bundles_file
+                .bundle
+                .iter()
+                .filter(|b| args.extract.iter().any(|n| n == &b.name))
+                .collect(),
+        )
+    };
+
+    if let Some(ref active) = active_bundles {
+        let names: Vec<&str> = active.iter().map(|b| b.name.as_str()).collect();
+        println!("Bundle filter: {}", names.join(", "));
+    }
+
     // Translate all paths up front.
     let translated_paths: Vec<String> = {
         let mut t = Translator::new(known, rathena_lookup);
         let paths: Vec<String> = grf
             .entries
             .iter()
-            .map(|e| t.translate_path(&e.internal_path))
+            .map(|e| {
+                let normalized = e.internal_path.replace('\\', "/");
+                if passthrough_prefixes.iter().any(|p| normalized.starts_with(p)) {
+                    normalized
+                } else {
+                    t.translate_path(&e.internal_path)
+                }
+            })
             .collect();
 
         // Write miss log.
@@ -114,32 +163,6 @@ fn main() -> Result<()> {
 
         paths
     };
-
-    // Load bundle filter if --extract was specified.
-    let bundles_file: Option<bundles::BundlesFile> = if args.extract.is_empty() {
-        None
-    } else {
-        let f = bundles::load(&args.bundles)?;
-        for name in &args.extract {
-            if !f.bundle.iter().any(|b| b.name == *name) {
-                let known: Vec<&str> = f.bundle.iter().map(|b| b.name.as_str()).collect();
-                eprintln!("WARN: unknown bundle '{name}'; known bundles: {}", known.join(", "));
-            }
-        }
-        Some(f)
-    };
-
-    let active_bundles: Option<Vec<&bundles::Bundle>> = bundles_file.as_ref().map(|f| {
-        f.bundle
-            .iter()
-            .filter(|b| args.extract.iter().any(|n| n == &b.name))
-            .collect()
-    });
-
-    if let Some(ref active) = active_bundles {
-        let names: Vec<&str> = active.iter().map(|b| b.name.as_str()).collect();
-        println!("Bundle filter: {}", names.join(", "));
-    }
 
     // Extract files.
     let mut extracted = 0usize;

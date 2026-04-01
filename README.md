@@ -107,8 +107,9 @@ by default:
 
 | Bundle | Matches |
 |--------|---------|
-| `sprite` | `data/sprite/` and `data/imf/` (sprites + IMF anchor files) |
-| `map` | `data/texture/` prefix and `.gat`, `.gnd`, `.rsw` extensions |
+| `sprite` | `data/sprite/`, `data/imf/`, and `data/palette/` (sprites, IMF anchors, body/head palettes) |
+| `map` | `data/texture/`, `data/model/` prefixes and `.gat`, `.gnd`, `.rsw` extensions |
+| `sound` | `data/wav/` (skill, monster, and environmental sound effects; BGM is not in the GRF) |
 
 Omitting `--extract` extracts everything (the default).
 

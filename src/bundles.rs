@@ -2,6 +2,10 @@ use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::path::Path;
 
+fn default_true() -> bool {
+    true
+}
+
 /// A named extraction bundle: matches GRF entries by path prefix or file extension.
 #[derive(Deserialize)]
 pub struct Bundle {
@@ -12,6 +16,9 @@ pub struct Bundle {
     /// File extensions (without leading dot) — any file with a matching extension is included.
     #[serde(default)]
     pub extensions: Vec<String>,
+    /// Whether to apply Korean→English translation for paths in this bundle (default: true).
+    #[serde(default = "default_true")]
+    pub translate: bool,
 }
 
 #[derive(Deserialize)]

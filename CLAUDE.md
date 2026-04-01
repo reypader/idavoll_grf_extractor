@@ -94,13 +94,80 @@ Defined in `bundles.toml`. Allows selective extraction via `--extract <name>[,<n
 ### Predefined bundles (`bundles.toml`)
 | Bundle | Includes |
 |--------|----------|
-| `sprite` | `data/sprite/` and `data/imf/` |
-| `map` | `data/texture/` + `.gat`, `.gnd`, `.rsw` files |
+| `sprite` | `data/sprite/`, `data/imf/`, `data/palette/` |
+| `map` | `data/texture/`, `data/model/` + `.gat`, `.gnd`, `.rsw` files |
+| `sound` | `data/wav/` |
 
 Omitting `--extract` extracts everything (default behaviour, preserves backward compatibility).
 
+### Translation control per bundle
+Each bundle has an optional `translate` boolean (default `true`). When set to `false`, files
+matching that bundle's `path_prefixes` are written with their original Korean filenames, with
+only backslash-to-slash path separator conversion applied. `extensions`-matched entries are
+unaffected by this flag (extension matching happens after translation).
+
+Current defaults: `sprite` translates; `map` and `sound` do not.
+
+`bundles.toml` is always loaded at startup, even when `--extract` is omitted, so translation
+passthrough applies to full extractions as well.
+
 ### Adding new bundles
 Edit `bundles.toml` — no code changes needed. Bundle definitions are loaded at runtime.
+
+### Known bundle gaps (not yet covered)
+
+These paths exist in the GRF but are not matched by any current bundle. Recorded for future
+bundling decisions.
+
+**Sprites outside `data/sprite/`**
+`data/luafiles514/lua files/sprite/` contains `.spr` and `.act` files (warlock,
+fox_warlock body sprites; some robe variants). Bitwise comparison against `data/sprite/`
+shows these are older/partial versions superseded by the canonical files:
+- `warlock_{female,male}.act/.spr` (4 files): byte-identical to `data/sprite/` — safe to ignore.
+- `fox_warlock_{female,male}.act` (2 files): larger in `luafiles514` (48276 vs 44628 bytes);
+  `.spr` files differ in content but are same size. Canonical `data/sprite/` version should be used.
+- Robe sprites (8 files): `luafiles514` `.spr` files are roughly half the size of
+  `data/sprite/` equivalents (e.g. 7219 vs 13152 bytes) — clearly older/incomplete.
+  The `dancer_pants_female.spr` differs by 2 bytes (minor patch).
+
+Verdict: `data/sprite/` is canonical for all of these. The sprite bundle does not need to
+cover `data/luafiles514/lua files/sprite/`.
+
+**Root-level `.txt` data tables** (40 files at `data/*.txt`)
+
+Map-relevant:
+- `mapnametable.txt` — internal map name → display name
+- `mp3nametable.txt` — map → BGM filename
+- `fogparametertable.txt` — per-map fog settings
+- `indoorrswtable.txt` — indoor map flags
+- `mapobjlighttable.txt` — map object lighting
+- `mappostable.txt` — NPC/warp positions
+- `viewpointtable.txt` — camera viewpoints
+
+Item/game data:
+- `idnum2itemresnametable.txt`, `idnum2itemdisplaynametable.txt`, `idnum2itemdesctable.txt`
+- `num2itemresnametable.txt`, `num2itemdisplaynametable.txt`, `num2itemdesctable.txt` (older equivalents)
+- `carditemnametable.txt`, `cardprefixnametable.txt`, `cardpostfixnametable.txt`
+- `itemslottable.txt`, `itemslotcounttable.txt`, `itemparamtable.txt`
+- `buyingstoreitemlist.txt`, `metalprocessitemlist.txt`, `metalprocessitemtable.txt`
+- `ItemMoveInfoV5.txt`, `resnametable.txt`, `bookitemnametable.txt`, `num2cardillustnametable.txt`
+
+Skill data:
+- `skillnametable.txt`, `skilldesctable.txt`, `skilldesctable2.txt`
+- `skilltreeview.txt`, `jobinheritlist.txt`, `leveluseskillspamount.txt`
+
+Misc: `etcinfo.txt`, `manner.txt`, `tipoftheday.txt`, `questid2display.txt`,
+`ba_frostjoke.txt`, `dc_scream.txt`, `exceptionminimapnametable.txt`
+
+**Lua / script files**
+- `data/luafiles514/` (272 files: `.lub`, `.lua`, plus the sprites above and 5 `.wav` in `effecttool/wav/`)
+- `data/lua files/` (61 files: older/duplicate Lua directory)
+- `data/ai/` (3 Lua monster AI scripts)
+
+**Other**
+- `data/user_interface/` — 15 `.bmp` UI illustration images
+- `data/book/` — 45 `.txt` in-game book text files
+- `data/video/` — 1 `.bik` intro video
 
 ---
 
